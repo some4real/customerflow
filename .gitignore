@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+.env
+
+# Django
+/staticfiles/
+media/
+*.log
+
+# VSCode / PyCharm
+.vscode/
+.idea/
+
+# Celery / RabbitMQ / Redis files
+celerybeat-schedule
+*.pid
+
+# Node / JS 
+node_modules/
