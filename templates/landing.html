@@ -1,0 +1,864 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CustomerFlow | Automated Customer Order Updates</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-900">
+
+<!-- NAVBAR -->
+<header class="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-2 font-bold text-xl">
+      <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white font-bold">C</div>
+      <span class="text-slate-900">CustomerFlow</span>
+    </div>
+
+    {% if user.is_authenticated %}
+    <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+      <a href="{% url 'dashboard:home' %}" class="hover:text-blue-600 transition">Dashboard</a>
+      <a href="{% url 'orders:list' %}" class="hover:text-blue-600 transition">Orders</a>
+      <a href="{% url 'customers:list' %}" class="hover:text-blue-600 transition">Customers</a> 
+     {% else %} 
+
+    <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+      <a href="#features" class="hover:text-blue-600 transition">Features</a>
+      <a href="#how" class="hover:text-blue-600 transition">How it Works</a>
+      <a href="#pricing" class="hover:text-blue-600 transition">Pricing</a>
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <a href="{% url 'accounts:login' %}" class="text-sm font-medium text-slate-600 hover:text-blue-600 transition">Sign In</a>
+      <a href="{% url 'accounts:register_organization' %}" class="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md">Start Free</a>
+    </div>
+  </div>
+      {% endif %}
+</header>
+
+
+<!-- HERO -->
+<section class="relative bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 text-white py-32 overflow-hidden">
+  <div class="absolute inset-0">
+    <div class="absolute top-10 right-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+    <div class="absolute bottom-10 left-10 w-72 h-72 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+  </div>
+
+  <div class="relative max-w-7xl mx-auto px-6 text-center">
+    <h1 class="text-5xl md:text-6xl font-bold leading-tight mb-6">
+      Automatically Update Customers About Their Orders
+    </h1>
+
+    <p class="text-xl text-blue-100 max-w-2xl mx-auto mb-10">
+      Stop wasting time on manual updates. CustomerFlow automatically notifies your customers when order status changes via Email, SMS, or WhatsApp.
+    </p>
+
+    <div class="flex flex-col sm:flex-row justify-center gap-4">
+      <a href="{% url 'accounts:register_organization' %}" class="bg-white text-blue-600 font-semibold px-8 py-3 rounded-xl hover:bg-blue-50 transition shadow-lg inline-flex items-center justify-center gap-2">
+        <i data-lucide="rocket" class="w-5 h-5"></i>
+        Start Free Trial
+      </a>
+      <a href="#how" class="border-2 border-white text-white font-semibold px-8 py-3 rounded-xl hover:bg-white/10 transition inline-flex items-center justify-center gap-2">
+        <i data-lucide="play" class="w-5 h-5"></i>
+        Watch Demo
+      </a>
+    </div>
+
+    <p class="text-blue-100 text-sm mt-6">✓ 14 days free • No credit card required • Cancel anytime</p>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="py-20 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <h2 class="text-4xl font-bold text-slate-900 mb-4">The Problem With Manual Updates</h2>
+      <p class="text-xl text-slate-600">Businesses waste countless hours on repetitive customer communication</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="bg-gradient-to-br from-red-50 to-orange-50 p-8 rounded-2xl border border-red-100">
+        <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-4">
+          <i data-lucide="message-circle-x" class="w-6 h-6 text-red-600"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-900">Endless Customer Messages</h3>
+        <p class="text-slate-600">Customers constantly ask about order progress and delivery updates, overloading your support team.</p>
+      </div>
+
+      <div class="bg-gradient-to-br from-yellow-50 to-amber-50 p-8 rounded-2xl border border-yellow-100">
+        <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center mb-4">
+          <i data-lucide="users" class="w-6 h-6 text-yellow-600"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-900">Manual Notifications</h3>
+        <p class="text-slate-600">Staff must manually check internal systems and send updates to each customer individually.</p>
+      </div>
+
+      <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-2xl border border-purple-100">
+        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+          <i data-lucide="clock" class="w-6 h-6 text-purple-600"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-900">Lost Productivity</h3>
+        <p class="text-slate-600">Support teams spend 10+ hours weekly answering the same repetitive questions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="py-24 bg-gradient-to-b from-slate-50 to-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">Features</span>
+      <h2 class="text-4xl font-bold text-slate-900 mt-2">CustomerFlow Automates Everything</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-10">
+      <div class="group">
+        <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+          <i data-lucide="workflow" class="w-8 h-8 text-blue-600"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-900">Custom Workflow Stages</h3>
+        <p class="text-slate-600">Create your own order stages like Quote, Payment, Production, Shipped, Delivered - tailored to your business.</p>
+      </div>
+
+      <div class="group">
+        <div class="w-16 h-16 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+          <i data-lucide="bell" class="w-8 h-8 text-emerald-600"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-900">Instant Notifications</h3>
+        <p class="text-slate-600">Customers get automatic updates the moment order status changes - no delays, no manual sending.</p>
+      </div>
+
+      <div class="group">
+        <div class="w-16 h-16 bg-gradient-to-br from-indigo-100 to-indigo-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+          <i data-lucide="network" class="w-8 h-8 text-indigo-600"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-900">Multi-Channel Delivery</h3>
+        <p class="text-slate-600">Send updates via Email, SMS, or WhatsApp - let customers choose their preferred communication channel.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="bg-gradient-to-br from-slate-900 to-slate-800 text-white py-24">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <span class="text-blue-400 font-semibold text-sm uppercase tracking-wider">Process</span>
+      <h2 class="text-4xl font-bold mt-2">How CustomerFlow Works</h2>
+      <p class="text-slate-400 mt-4">Set it up once and let automation handle the rest</p>
+    </div>
+
+    <div class="grid md:grid-cols-4 gap-6">
+      <div class="relative">
+        <div class="bg-slate-700/50 backdrop-blur border border-slate-600 rounded-2xl p-8 text-center">
+          <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">1</div>
+          <h3 class="font-bold mb-2">Receive Order</h3>
+          <p class="text-slate-300 text-sm">Customer places a service request or order</p>
+        </div>
+        <div class="hidden md:block absolute top-1/3 -right-3 w-6 h-1 bg-gradient-to-r from-blue-500 to-transparent"></div>
+      </div>
+
+      <div class="relative">
+        <div class="bg-slate-700/50 backdrop-blur border border-slate-600 rounded-2xl p-8 text-center">
+          <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">2</div>
+          <h3 class="font-bold mb-2">Create in System</h3>
+          <p class="text-slate-300 text-sm">Staff enters order into CustomerFlow</p>
+        </div>
+        <div class="hidden md:block absolute top-1/3 -right-3 w-6 h-1 bg-gradient-to-r from-blue-500 to-transparent"></div>
+      </div>
+
+      <div class="relative">
+        <div class="bg-slate-700/50 backdrop-blur border border-slate-600 rounded-2xl p-8 text-center">
+          <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">3</div>
+          <h3 class="font-bold mb-2">Update Status</h3>
+          <p class="text-slate-300 text-sm">Update the workflow stage as work progresses</p>
+        </div>
+        <div class="hidden md:block absolute top-1/3 -right-3 w-6 h-1 bg-gradient-to-r from-blue-500 to-transparent"></div>
+      </div>
+
+      <div class="relative">
+        <div class="bg-slate-700/50 backdrop-blur border border-slate-600 rounded-2xl p-8 text-center">
+          <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">4</div>
+          <h3 class="font-bold mb-2">Auto Notify</h3>
+          <p class="text-slate-300 text-sm">Customers get instant notifications</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS SECTION -->
+<section class="py-20 bg-white border-b border-slate-100">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="grid md:grid-cols-4 gap-8">
+      <div class="text-center">
+        <p class="text-4xl md:text-5xl font-bold text-blue-600 mb-2">2,500+</p>
+        <p class="text-slate-600">Active Companies</p>
+      </div>
+      <div class="text-center">
+        <p class="text-4xl md:text-5xl font-bold text-emerald-600 mb-2">50M+</p>
+        <p class="text-slate-600">Notifications Sent</p>
+      </div>
+      <div class="text-center">
+        <p class="text-4xl md:text-5xl font-bold text-purple-600 mb-2">98.9%</p>
+        <p class="text-slate-600">Uptime SLA</p>
+      </div>
+      <div class="text-center">
+        <p class="text-4xl md:text-5xl font-bold text-orange-600 mb-2">24/7</p>
+        <p class="text-slate-600">Expert Support</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF - COMPANIES USING IT -->
+<section class="py-20 bg-gradient-to-b from-slate-50 to-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">Trusted By</span>
+      <h2 class="text-4xl font-bold text-slate-900 mt-2">Used by Leading Logistics & Order Management Companies</h2>
+      <p class="text-slate-600 mt-4">From startups to enterprises, teams worldwide rely on CustomerFlow</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
+      <!-- FedEx-style -->
+      <div class="flex items-center justify-center p-4 rounded-lg bg-white border border-slate-200 hover:shadow-md transition h-20">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-slate-400">📦</div>
+          <p class="text-xs text-slate-600 mt-1">FastShip Pro</p>
+        </div>
+      </div>
+
+      <!-- DHL-style -->
+      <div class="flex items-center justify-center p-4 rounded-lg bg-white border border-slate-200 hover:shadow-md transition h-20">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-slate-400">🚚</div>
+          <p class="text-xs text-slate-600 mt-1">LogiFlow</p>
+        </div>
+      </div>
+
+      <!-- UPS-style -->
+      <div class="flex items-center justify-center p-4 rounded-lg bg-white border border-slate-200 hover:shadow-md transition h-20">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-slate-400">🌐</div>
+          <p class="text-xs text-slate-600 mt-1">Global Cargo</p>
+        </div>
+      </div>
+
+      <!-- Amazon-style -->
+      <div class="flex items-center justify-center p-4 rounded-lg bg-white border border-slate-200 hover:shadow-md transition h-20">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-slate-400">📍</div>
+          <p class="text-xs text-slate-600 mt-1">DeliveryHub</p>
+        </div>
+      </div>
+
+      <!-- Alibaba-style -->
+      <div class="flex items-center justify-center p-4 rounded-lg bg-white border border-slate-200 hover:shadow-md transition h-20">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-slate-400">🎯</div>
+          <p class="text-xs text-slate-600 mt-1">TradeFlow</p>
+        </div>
+      </div>
+
+      <!-- API-style -->
+      <div class="flex items-center justify-center p-4 rounded-lg bg-white border border-slate-200 hover:shadow-md transition h-20">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-slate-400">⚙️</div>
+          <p class="text-xs text-slate-600 mt-1">OrderSync</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="py-24 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">Testimonials</span>
+      <h2 class="text-4xl font-bold text-slate-900 mt-2">Loved by Teams Across Industries</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- Testimonial 1 - Logistics -->
+      <div class="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-2xl p-8">
+        <div class="flex items-center gap-1 mb-4">
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+        </div>
+        <p class="text-slate-700 mb-6 leading-relaxed">"CustomerFlow reduced our customer support inquiries by 75%. We used to get dozens of 'Where's my package?' calls daily. Now customers get real-time updates automatically. It's been a game-changer for our logistics operation."</p>
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">RS</div>
+          <div>
+            <p class="font-semibold text-slate-900">Raj Singh</p>
+            <p class="text-sm text-slate-600">Operations Manager, FastShip Pro</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testimonial 2 - E-commerce -->
+      <div class="bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-2xl p-8">
+        <div class="flex items-center gap-1 mb-4">
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+        </div>
+        <p class="text-slate-700 mb-6 leading-relaxed">"Implementation was seamless. Within a week, we had automated order updates across email, SMS, and WhatsApp. Customer satisfaction scores increased by 42% and our team gained hours of productivity back every day."</p>
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-sm">MC</div>
+          <div>
+            <p class="font-semibold text-slate-900">Maria Cardoso</p>
+            <p class="text-sm text-slate-600">CEO, DeliveryHub</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testimonial 3 - Services -->
+      <div class="bg-gradient-to-br from-purple-50 to-white border border-purple-100 rounded-2xl p-8">
+        <div class="flex items-center gap-1 mb-4">
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+          <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
+        </div>
+        <p class="text-slate-700 mb-6 leading-relaxed">"The customizable workflow stages are perfect for our repair business. We track Quote → Accepted → In Progress → Ready for Pickup → Completed. Customers love the transparency, and our team loves the automation."</p>
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">JL</div>
+          <div>
+            <p class="font-semibold text-slate-900">James Lee</p>
+            <p class="text-sm text-slate-600">Owner, Platinum Repairs</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section class="py-24 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">Use Cases</span>
+      <h2 class="text-4xl font-bold text-slate-900 mt-2">Built for Any Multi-Step Business</h2>
+    </div>
+
+    <div class="grid md:grid-cols-4 gap-6">
+      <div class="group border-2 border-slate-200 rounded-xl p-6 hover:border-blue-500 hover:bg-blue-50/50 transition cursor-pointer">
+        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
+          <i data-lucide="truck" class="w-6 h-6 text-blue-600"></i>
+        </div>
+        <h3 class="font-bold text-slate-900">Logistics</h3>
+        <p class="text-sm text-slate-600 mt-2">Track shipments and notify on delivery status</p>
+      </div>
+
+      <div class="group border-2 border-slate-200 rounded-xl p-6 hover:border-blue-500 hover:bg-blue-50/50 transition cursor-pointer">
+        <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
+          <i data-lucide="globe" class="w-6 h-6 text-emerald-600"></i>
+        </div>
+        <h3 class="font-bold text-slate-900">Shipping Agents</h3>
+        <p class="text-sm text-slate-600 mt-2">Update international order progress</p>
+      </div>
+
+      <div class="group border-2 border-slate-200 rounded-xl p-6 hover:border-blue-500 hover:bg-blue-50/50 transition cursor-pointer">
+        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
+          <i data-lucide="briefcase" class="w-6 h-6 text-purple-600"></i>
+        </div>
+        <h3 class="font-bold text-slate-900">Sourcing Agents</h3>
+        <p class="text-sm text-slate-600 mt-2">Manage supplier order workflows</p>
+      </div>
+
+      <div class="group border-2 border-slate-200 rounded-xl p-6 hover:border-blue-500 hover:bg-blue-50/50 transition cursor-pointer">
+        <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
+          <i data-lucide="wrench" class="w-6 h-6 text-orange-600"></i>
+        </div>
+        <h3 class="font-bold text-slate-900">Repair & Services</h3>
+        <p class="text-sm text-slate-600 mt-2">Notify on repair status updates</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="bg-gradient-to-b from-slate-50 to-white py-24">
+  <div class="max-w-4xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">Pricing</span>
+      <h2 class="text-4xl font-bold text-slate-900 mt-2">Simple, Transparent Pricing</h2>
+      <p class="text-slate-600 mt-4">Start free and upgrade as you grow</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Starter Plan -->
+      <div class="border-2 border-slate-200 rounded-2xl p-8 hover:border-blue-500 hover:shadow-lg transition">
+        <h3 class="text-xl font-bold text-slate-900 mb-2">Starter</h3>
+        <p class="text-slate-600 text-sm mb-6">Perfect for new businesses</p>
+        <p class="text-4xl font-bold text-slate-900 mb-6">$0<span class="text-sm text-slate-500">/month first 14 days</span></p>
+
+        <ul class="space-y-3 mb-8 text-sm text-slate-700">
+          <li class="flex items-center gap-2">
+            <i data-lucide="check" class="w-5 h-5 text-emerald-500"></i>
+            Up to 100 orders/month
+          </li>
+          <li class="flex items-center gap-2">
+            <i data-lucide="check" class="w-5 h-5 text-emerald-500"></i>
+            Email notifications
+          </li>
+          <li class="flex items-center gap-2">
+            <i data-lucide="check" class="w-5 h-5 text-emerald-500"></i>
+            5 custom workflow stages
+          </li>
+          <li class="flex items-center gap-2">
+            <i data-lucide="check" class="w-5 h-5 text-emerald-500"></i>
+            Basic reporting
+          </li>
+        </ul>
+
+        <a href="{% url 'accounts:login' %}" class="w-full bg-slate-100 text-slate-900 font-semibold py-3 rounded-xl hover:bg-slate-200 transition">Start Free Trial</a>
+      </div>
+
+      <!-- Pro Plan -->
+      <div class="border-2 border-blue-500 rounded-2xl p-8 shadow-lg relative">
+        <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-bold">MOST POPULAR</div>
+        
+        <h3 class="text-xl font-bold text-slate-900 mb-2">Professional</h3>
+        <p class="text-slate-600 text-sm mb-6">For growing teams</p>
+        <p class="text-4xl font-bold text-slate-900 mb-6">$49<span class="text-sm text-slate-500">/month</span></p>
+
+        <ul class="space-y-3 mb-8 text-sm text-slate-700">
+          <li class="flex items-center gap-2">
+            <i data-lucide="check" class="w-5 h-5 text-emerald-500"></i>
+            Unlimited orders
+          </li>
+          <li class="flex items-center gap-2">
+            <i data-lucide="check" class="w-5 h-5 text-emerald-500"></i>
+            Email + SMS + WhatsApp
+          </li>
+          <li class="flex items-center gap-2">
+            <i data-lucide="check" class="w-5 h-5 text-emerald-500"></i>
+            Unlimited workflow stages
+          </li>
+          <li class="flex items-center gap-2">
+            <i data-lucide="check" class="w-5 h-5 text-emerald-500"></i>
+            Advanced analytics
+          </li>
+        </ul>
+
+        <a href="{% url 'accounts:register_organization' %}" class="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition">Start Free Trial</a>
+      </div>
+    </div>
+
+    <p class="text-center text-slate-600 text-sm mt-8">All plans include 14-day free trial. No credit card required.</p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-20">
+  <div class="max-w-4xl mx-auto px-6 text-center">
+    <h2 class="text-4xl font-bold mb-6">Stop Wasting Time on Manual Updates</h2>
+    <p class="text-xl text-blue-100 mb-10">Launch CustomerFlow today and automate your customer communications in minutes.</p>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="{% url 'accounts:register_organization' %}" class="bg-white text-blue-600 font-semibold px-8 py-4 rounded-xl hover:bg-blue-50 transition shadow-lg inline-flex items-center justify-center gap-2">
+        <i data-lucide="zap" class="w-5 h-5"></i>
+        Start Free Trial Now
+      </a>
+      <a href="#how" class="border-2 border-white text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/10 transition inline-flex items-center justify-center gap-2">
+        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        Learn More
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section class="py-24 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">Comparison</span>
+      <h2 class="text-4xl font-bold text-slate-900 mt-2">Why Choose CustomerFlow?</h2>
+      <p class="text-slate-600 mt-4">See how we compare to the competition</p>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-200">
+            <th class="text-left py-4 px-4 font-bold text-slate-900">Feature</th>
+            <th class="text-center py-4 px-4">
+              <div class="font-bold text-blue-600">CustomerFlow</div>
+              <div class="text-xs text-blue-500">✓ Optimized</div>
+            </th>
+            <th class="text-center py-4 px-4">
+              <div class="font-bold text-slate-600">Monday.com</div>
+            </th>
+            <th class="text-center py-4 px-4">
+              <div class="font-bold text-slate-600">Zoho</div>
+            </th>
+            <th class="text-center py-4 px-4">
+              <div class="font-bold text-slate-600">Salesforce</div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="py-4 px-4 font-medium text-slate-900">Automated Customer Notifications</td>
+            <td class="text-center py-4 px-4"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 inline"></i></td>
+            <td class="text-center py-4 px-4">Limited</td>
+            <td class="text-center py-4 px-4">Limited</td>
+            <td class="text-center py-4 px-4"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 inline"></i></td>
+          </tr>
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="py-4 px-4 font-medium text-slate-900">Multi-Channel (Email, SMS, WhatsApp)</td>
+            <td class="text-center py-4 px-4"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 inline"></i></td>
+            <td class="text-center py-4 px-4">Limited</td>
+            <td class="text-center py-4 px-4"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 inline"></i></td>
+            <td class="text-center py-4 px-4"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 inline"></i></td>
+          </tr>
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="py-4 px-4 font-medium text-slate-900">Custom Workflow Stages</td>
+            <td class="text-center py-4 px-4"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 inline"></i></td>
+            <td class="text-center py-4 px-4"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 inline"></i></td>
+            <td class="text-center py-4 px-4"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 inline"></i></td>
+            <td class="text-center py-4 px-4"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 inline"></i></td>
+          </tr>
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="py-4 px-4 font-medium text-slate-900">Ease of Setup</td>
+            <td class="text-center py-4 px-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">5 min</span></td>
+            <td class="text-center py-4 px-4">1-2 weeks</td>
+            <td class="text-center py-4 px-4">2-4 weeks</td>
+            <td class="text-center py-4 px-4">Months</td>
+          </tr>
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="py-4 px-4 font-medium text-slate-900">Starting Price</td>
+            <td class="text-center py-4 px-4"><span class="font-bold text-emerald-600">Free</span></td>
+            <td class="text-center py-4 px-4">$99/mo</td>
+            <td class="text-center py-4 px-4">$89/mo</td>
+            <td class="text-center py-4 px-4">$165/mo</td>
+          </tr>
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="py-4 px-4 font-medium text-slate-900">Shipping/Logistics Focus</td>
+            <td class="text-center py-4 px-4"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 inline"></i></td>
+            <td class="text-center py-4 px-4"></td>
+            <td class="text-center py-4 px-4"></td>
+            <td class="text-center py-4 px-4"></td>
+          </tr>
+          <tr class="hover:bg-slate-50">
+            <td class="py-4 px-4 font-medium text-slate-900">Customer Support (24/7)</td>
+            <td class="text-center py-4 px-4"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 inline"></i></td>
+            <td class="text-center py-4 px-4">Pro plans only</td>
+            <td class="text-center py-4 px-4">Pro plans only</td>
+            <td class="text-center py-4 px-4"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 inline"></i></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATIONS -->
+<section class="py-24 bg-gradient-to-b from-slate-50 to-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">Integrations</span>
+      <h2 class="text-4xl font-bold text-slate-900 mt-2">Connects With Your Entire Stack</h2>
+      <p class="text-slate-600 mt-4">Seamlessly integrate with your existing tools and platforms</p>
+    </div>
+
+    <div class="grid md:grid-cols-4 gap-6">
+      <div class="group border-2 border-slate-200 rounded-xl p-6 hover:border-blue-500 hover:bg-blue-50/50 transition text-center">
+        <div class="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition text-2xl">
+          📊
+        </div>
+        <h3 class="font-bold text-slate-900">Shopify</h3>
+        <p class="text-xs text-slate-600 mt-2">Sync orders automatically</p>
+      </div>
+
+      <div class="group border-2 border-slate-200 rounded-xl p-6 hover:border-blue-500 hover:bg-blue-50/50 transition text-center">
+        <div class="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition text-2xl">
+          📦
+        </div>
+        <h3 class="font-bold text-slate-900">WooCommerce</h3>
+        <p class="text-xs text-slate-600 mt-2">Real-time order updates</p>
+      </div>
+
+      <div class="group border-2 border-slate-200 rounded-xl p-6 hover:border-blue-500 hover:bg-blue-50/50 transition text-center">
+        <div class="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition text-2xl">
+          🚚
+        </div>
+        <h3 class="font-bold text-slate-900">ShipStation</h3>
+        <p class="text-xs text-slate-600 mt-2">Track shipments live</p>
+      </div>
+
+      <div class="group border-2 border-slate-200 rounded-xl p-6 hover:border-blue-500 hover:bg-blue-50/50 transition text-center">
+        <div class="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition text-2xl">
+          💬
+        </div>
+        <h3 class="font-bold text-slate-900">Slack</h3>
+        <p class="text-xs text-slate-600 mt-2">Get notifications in Slack</p>
+      </div>
+
+      <div class="group border-2 border-slate-200 rounded-xl p-6 hover:border-blue-500 hover:bg-blue-50/50 transition text-center">
+        <div class="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition text-2xl">
+          📧
+        </div>
+        <h3 class="font-bold text-slate-900">Zapier</h3>
+        <p class="text-xs text-slate-600 mt-2">1000+ app integrations</p>
+      </div>
+
+      <div class="group border-2 border-slate-200 rounded-xl p-6 hover:border-blue-500 hover:bg-blue-50/50 transition text-center">
+        <div class="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition text-2xl">
+          🔌
+        </div>
+        <h3 class="font-bold text-slate-900">REST API</h3>
+        <p class="text-xs text-slate-600 mt-2">Custom integrations</p>
+      </div>
+
+      <div class="group border-2 border-slate-200 rounded-xl p-6 hover:border-blue-500 hover:bg-blue-50/50 transition text-center">
+        <div class="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition text-2xl">
+          ☁️
+        </div>
+        <h3 class="font-bold text-slate-900">Google Sheets</h3>
+        <p class="text-xs text-slate-600 mt-2">Build reports with data</p>
+      </div>
+
+      <div class="group border-2 border-slate-200 rounded-xl p-6 hover:border-blue-500 hover:bg-blue-50/50 transition text-center">
+        <div class="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition text-2xl">
+          📱
+        </div>
+        <h3 class="font-bold text-slate-900">Webhooks</h3>
+        <p class="text-xs text-slate-600 mt-2">Real-time events</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY & COMPLIANCE -->
+<section class="py-24 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">Security</span>
+      <h2 class="text-4xl font-bold text-slate-900 mt-2">Enterprise-Grade Security & Compliance</h2>
+      <p class="text-slate-600 mt-4">Your data is protected with industry best practices</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="border border-slate-200 rounded-2xl p-8 hover:shadow-lg transition">
+        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+          <i data-lucide="shield-check" class="w-6 h-6 text-blue-600"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-900">SOC 2 Type II Certified</h3>
+        <p class="text-slate-600">Independently audited and verified for security and reliability standards.</p>
+      </div>
+
+      <div class="border border-slate-200 rounded-2xl p-8 hover:shadow-lg transition">
+        <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
+          <i data-lucide="lock" class="w-6 h-6 text-emerald-600"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-900">End-to-End Encryption</h3>
+        <p class="text-slate-600">All data in transit and at rest is encrypted with AES-256 encryption.</p>
+      </div>
+
+      <div class="border border-slate-200 rounded-2xl p-8 hover:shadow-lg transition">
+        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+          <i data-lucide="globe" class="w-6 h-6 text-purple-600"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-900">GDPR Compliant</h3>
+        <p class="text-slate-600">Fully compliant with GDPR, CCPA, and other data protection regulations.</p>
+      </div>
+
+      <div class="border border-slate-200 rounded-2xl p-8 hover:shadow-lg transition">
+        <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-4">
+          <i data-lucide="database" class="w-6 h-6 text-orange-600"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-900">99.99% Uptime SLA</h3>
+        <p class="text-slate-600">Guaranteed uptime with redundant systems and 24/7 monitoring.</p>
+      </div>
+
+      <div class="border border-slate-200 rounded-2xl p-8 hover:shadow-lg transition">
+        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+          <i data-lucide="alert-circle" class="w-6 h-6 text-blue-600"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-900">Daily Backups</h3>
+        <p class="text-slate-600">Automated daily backups with geo-redundancy across multiple regions.</p>
+      </div>
+
+      <div class="border border-slate-200 rounded-2xl p-8 hover:shadow-lg transition">
+        <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-4">
+          <i data-lucide="activity" class="w-6 h-6 text-red-600"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2 text-slate-900">Audit Logs</h3>
+        <p class="text-slate-600">Complete audit trails for compliance and security investigations.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="py-24 bg-gradient-to-b from-slate-50 to-white">
+  <div class="max-w-3xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">FAQ</span>
+      <h2 class="text-4xl font-bold text-slate-900 mt-2">Frequently Asked Questions</h2>
+    </div>
+
+    <div class="space-y-6">
+      <details class="group border border-slate-200 rounded-xl p-6 hover:shadow-md transition cursor-pointer">
+        <summary class="flex items-center justify-between font-bold text-slate-900">
+          How quickly can we get started?
+          <i data-lucide="chevron-down" class="w-5 h-5 text-slate-600 group-open:rotate-180 transition"></i>
+        </summary>
+        <p class="text-slate-600 mt-4">You can be up and running in under 5 minutes. Simply create an account, set up your workflow stages, and add your customers. We provide templates to help you get started immediately.</p>
+      </details>
+
+      <details class="group border border-slate-200 rounded-xl p-6 hover:shadow-md transition cursor-pointer">
+        <summary class="flex items-center justify-between font-bold text-slate-900">
+          Can we customize the notification messages?
+          <i data-lucide="chevron-down" class="w-5 h-5 text-slate-600 group-open:rotate-180 transition"></i>
+        </summary>
+        <p class="text-slate-600 mt-4">Absolutely! You have full control over the message templates for each stage. Add your company branding, customize tone, and include dynamic fields like customer name, order ID, and estimated delivery time.</p>
+      </details>
+
+      <details class="group border border-slate-200 rounded-xl p-6 hover:shadow-md transition cursor-pointer">
+        <summary class="flex items-center justify-between font-bold text-slate-900">
+          What payment options do you support?
+          <i data-lucide="chevron-down" class="w-5 h-5 text-slate-600 group-open:rotate-180 transition"></i>
+        </summary>
+        <p class="text-slate-600 mt-4">We support all major payment methods including credit cards, debit cards, bank transfers, and wire transfers. All billing is handled securely through our payment processor.</p>
+      </details>
+
+      <details class="group border border-slate-200 rounded-xl p-6 hover:shadow-md transition cursor-pointer">
+        <summary class="flex items-center justify-between font-bold text-slate-900">
+          Can we migrate data from our existing system?
+          <i data-lucide="chevron-down" class="w-5 h-5 text-slate-600 group-open:rotate-180 transition"></i>
+        </summary>
+        <p class="text-slate-600 mt-4">Yes! Our team provides free migration support. We can import your existing orders, customers, and workflows from any system. Most migrations are completed within 1-2 days.</p>
+      </details>
+
+      <details class="group border border-slate-200 rounded-xl p-6 hover:shadow-md transition cursor-pointer">
+        <summary class="flex items-center justify-between font-bold text-slate-900">
+          What's your customer support like?
+          <i data-lucide="chevron-down" class="w-5 h-5 text-slate-600 group-open:rotate-180 transition"></i>
+        </summary>
+        <p class="text-slate-600 mt-4">We offer 24/7 email and chat support for all customers. Premium plans include dedicated account managers and phone support. Average response time is under 2 hours.</p>
+      </details>
+
+      <details class="group border border-slate-200 rounded-xl p-6 hover:shadow-md transition cursor-pointer">
+        <summary class="flex items-center justify-between font-bold text-slate-900">
+          Is there a contract or can we cancel anytime?
+          <i data-lucide="chevron-down" class="w-5 h-5 text-slate-600 group-open:rotate-180 transition"></i>
+        </summary>
+        <p class="text-slate-600 mt-4">No long-term contracts. You can cancel your subscription anytime. If you're on a monthly plan, you can downgrade or upgrade at any time with changes taking effect on your next billing date.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-slate-200 bg-slate-900 text-slate-400 py-16">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid md:grid-cols-5 gap-8 mb-8">
+      <div>
+        <div class="flex items-center gap-2 font-bold text-white mb-4">
+          <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white">C</div>
+          <span>CustomerFlow</span>
+        </div>
+        <p class="text-sm">Automate customer communications and eliminate manual updates.</p>
+        <div class="flex gap-3 mt-4">
+          <a href="#" class="hover:text-blue-400 transition">
+            <i data-lucide="twitter" class="w-4 h-4"></i>
+          </a>
+          <a href="#" class="hover:text-blue-400 transition">
+            <i data-lucide="linkedin" class="w-4 h-4"></i>
+          </a>
+          <a href="#" class="hover:text-blue-400 transition">
+            <i data-lucide="github" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+      
+      <div>
+        <h4 class="font-semibold text-white mb-4">Product</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#features" class="hover:text-white transition">Features</a></li>
+          <li><a href="#pricing" class="hover:text-white transition">Pricing</a></li>
+          <li><a href="#how" class="hover:text-white transition">How it Works</a></li>
+          <li><a href="#" class="hover:text-white transition">Integrations</a></li>
+          <li><a href="#" class="hover:text-white transition">API Docs</a></li>
+        </ul>
+      </div>
+      
+      <div>
+        <h4 class="font-semibold text-white mb-4">Company</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-white transition">About Us</a></li>
+          <li><a href="#" class="hover:text-white transition">Blog</a></li>
+          <li><a href="#" class="hover:text-white transition">Careers</a></li>
+          <li><a href="#" class="hover:text-white transition">Press</a></li>
+          <li><a href="#" class="hover:text-white transition">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-semibold text-white mb-4">Resources</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-white transition">Documentation</a></li>
+          <li><a href="#" class="hover:text-white transition">Help Center</a></li>
+          <li><a href="#" class="hover:text-white transition">Support</a></li>
+          <li><a href="#" class="hover:text-white transition">Status Page</a></li>
+          <li><a href="#" class="hover:text-white transition">Community</a></li>
+        </ul>
+      </div>
+      
+      <div>
+        <h4 class="font-semibold text-white mb-4">Legal</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
+          <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
+          <li><a href="#" class="hover:text-white transition">Security</a></li>
+          <li><a href="#" class="hover:text-white transition">Compliance</a></li>
+          <li><a href="#" class="hover:text-white transition">Cookies</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8 py-8 border-t border-slate-700">
+      <div class="text-sm">
+        <p class="text-white font-semibold mb-2">Certifications</p>
+        <p class="text-slate-400">SOC 2 Type II • GDPR • CCPA • ISO 27001</p>
+      </div>
+      <div class="text-sm">
+        <p class="text-white font-semibold mb-2">Global Infrastructure</p>
+        <p class="text-slate-400">US • EU • APAC • 99.99% Uptime</p>
+      </div>
+      <div class="text-sm text-right">
+        <p class="text-white font-semibold mb-2">Follow Us</p>
+        <p class="text-slate-400">@customerflow_hq</p>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-700 pt-8 text-center text-sm">
+      <p>© {% now "Y" %} CustomerFlow. All rights reserved. Made with ❤️ by the CustomerFlow team.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+  });
+</script>
+
+</body>
+</html>

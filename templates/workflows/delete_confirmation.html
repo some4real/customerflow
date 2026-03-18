@@ -1,0 +1,12 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-xl font-semibold mb-4">Delete Stage</h1>
+    <p>Are you sure you want to delete stage "<strong>{{ stage.name }}</strong>"? This action cannot be undone.</p>
+    <form method="post" class="mt-4 flex justify-end space-x-2">
+        {% csrf_token %}
+        <a href="{% url 'workflows:list' %}" class="px-4 py-2 rounded bg-gray-200">Cancel</a>
+        <button type="submit" class="px-4 py-2 rounded bg-red-600 text-red">Delete</button>
+    </form>
+</div>
+{% endblock %}

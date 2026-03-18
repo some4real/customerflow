@@ -1,0 +1,96 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+{% load widget_tweaks %}
+
+<!-- Centered page wrapper -->
+<div class="flex items-center justify-center min-h-screen bg-gray-50 px-4">
+
+  <!-- Invite Card -->
+  <div class="bg-white rounded-3xl shadow-xl border border-gray-200 w-full max-w-md px-8 py-10 md:px-10 md:py-12">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-extrabold text-gray-900">Invite Team Member</h1>
+      <p class="mt-2 text-gray-500 text-sm">
+        Add a staff member to your <span class="font-medium">{{ request.user.organization.name }}</span> organization
+      </p>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="space-y-3 mb-6">
+      {% for message in messages %}
+      <div class="flex items-center gap-3 p-3 rounded-lg bg-blue-50 text-blue-700 border border-blue-100">
+        <i data-lucide="check-circle" class="w-5 h-5"></i>
+        <p class="text-sm">{{ message }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Invite Form -->
+    <form method="post" class="space-y-6">
+      {% csrf_token %}
+
+      <!-- Email Input -->
+      <div class="relative">
+        <input type="email"
+               name="email"
+               id="{{ form.email.id_for_label }}"
+               placeholder="Email address"
+               class="peer w-full rounded-lg border border-gray-300 bg-gray-50 px-4 pt-5 pb-3 text-gray-900 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 transition"
+               required>
+        <label for="{{ form.email.id_for_label }}" class="absolute left-4 top-3 text-gray-400 text-sm transition-all duration-200 peer-placeholder-shown:top-5 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:top-3 peer-focus:text-sm peer-focus:text-gray-600 font-medium">
+          Email Address <span class="text-red-500">*</span>
+        </label>
+        {% if form.email.errors %}
+        <p class="text-xs text-red-600 mt-1 flex items-center gap-1">
+          <i data-lucide="alert-circle" class="w-4 h-4"></i>
+          {{ form.email.errors.0 }}
+        </p>
+        {% endif %}
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="w-full py-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-2 shadow-md transition duration-200">
+        <i data-lucide="send" class="w-5 h-5"></i>
+        Send Invitation
+      </button>
+    </form>
+
+    <!-- Pending Invitations -->
+    <div class="mt-10">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Pending Invitations</h2>
+
+      {% if pending_invitations %}
+      <div class="space-y-3 max-h-64 overflow-y-auto pr-2">
+        {% for invitation in pending_invitations %}
+        <div class="flex items-center justify-between bg-gray-50 rounded-lg p-4 border border-gray-100 hover:bg-gray-100 transition">
+          <div>
+            <p class="text-gray-900 font-medium truncate">{{ invitation.email }}</p>
+            <p class="text-xs text-gray-500 mt-1">
+              Sent {{ invitation.created_at|timesince }} ago
+            </p>
+          </div>
+          <span class="inline-flex items-center justify-center w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-10 text-gray-400">
+        <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
+        <p class="text-sm">No pending invitations</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  lucide.createIcons();
+});
+</script>
+
+{% endblock %}

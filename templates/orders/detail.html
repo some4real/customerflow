@@ -1,0 +1,188 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="w-full px-6 lg:px-12 py-8">
+
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-[2fr_1fr] gap-10">
+
+    <!-- MAIN COLUMN -->
+    <div class="space-y-8">
+
+      <!-- HEADER -->
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-slate-900">{{ order.title }}</h1>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="px-3 py-1 text-xs rounded-full bg-slate-100 text-slate-600 font-medium">
+              #{{ order.order_number }}
+            </span>
+            <span class="px-3 py-1 text-xs rounded-full bg-{{ order.status.color }}-100 text-{{ order.status.color }}-700 font-semibold">
+              {{ order.status.name }}
+            </span>
+          </div>
+          <p class="text-sm text-slate-500 mt-1">Created {{ order.created_at|date:"M d, Y · g:i A" }}</p>
+        </div>
+        <div class="flex gap-3 mt-4 lg:mt-0">
+          <a href="{% url 'orders:update' order.id %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow hover:bg-blue-700 transition">
+            <i data-lucide="edit" class="w-4 h-4"></i> Edit Order
+          </a>
+          <a href="{% url 'orders:list' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 transition">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
+          </a>
+        </div>
+      </div>
+
+      <!-- ORDER INFORMATION -->
+      <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <h2 class="flex items-center gap-2 text-lg font-semibold text-slate-900 mb-4">
+          <i data-lucide="package" class="w-5 h-5 text-blue-600"></i> Order Information
+        </h2>
+        <div class="grid sm:grid-cols-2 gap-6">
+          <div>
+            <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">Title</p>
+            <p class="font-semibold text-slate-900">{{ order.title }}</p>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">Status</p>
+            <span class="px-3 py-1 text-sm rounded-full bg-{{ order.status.color }}-100 text-{{ order.status.color }}-700 font-semibold">
+              {{ order.status.name }}
+            </span>
+          </div>
+          <div class="sm:col-span-2">
+            <p class="text-xs uppercase tracking-wider text-slate-400 mb-2">Description</p>
+            <p class="text-slate-600 leading-relaxed">{{ order.description|default:"No description provided." }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORDER TIMELINE -->
+      <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <h2 class="flex items-center gap-2 text-lg font-semibold text-slate-900 mb-4">
+          <i data-lucide="clock" class="w-5 h-5 text-purple-600"></i> Order Timeline
+        </h2>
+        <div class="space-y-4 text-sm">
+          <div class="flex items-start gap-4">
+            <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">
+              <i data-lucide="plus" class="w-4 h-4 text-blue-600"></i>
+            </div>
+            <div>
+              <p class="font-medium text-slate-800">Order Created</p>
+              <p class="text-xs text-slate-400">{{ order.created_at|date:"M d, Y g:i A" }}</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center">
+              <i data-lucide="refresh-cw" class="w-4 h-4 text-slate-600"></i>
+            </div>
+            <div>
+              <p class="font-medium text-slate-800">Last Updated</p>
+              <p class="text-xs text-slate-400">{{ order.updated_at|date:"M d, Y g:i A" }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVITY FEED (scrollable with fixed height) -->
+      <div class="bg-white border border-slate-200 rounded-xl p-6 space-y-3 shadow-sm max-h-[500px] overflow-y-auto">
+        <h2 class="flex items-center gap-2 text-lg font-semibold text-slate-900 mb-4">
+          <i data-lucide="bell" class="w-5 h-5 text-emerald-600"></i> Activity Feed
+        </h2>
+        {% if timeline %}
+          <div class="space-y-4">
+            {% for item in timeline %}
+              <div class="flex items-start gap-4">
+                <div class="flex-shrink-0">
+                  {% if item.type == "notification" %}
+                    <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
+                      {% if item.channel == "email" %}
+                        <i data-lucide="mail" class="w-4 h-4 text-blue-600"></i>
+                      {% elif item.channel == "sms" %}
+                        <i data-lucide="phone" class="w-4 h-4 text-emerald-600"></i>
+                      {% elif item.channel == "whatsapp" %}
+                        <i data-lucide="message-circle" class="w-4 h-4 text-green-600"></i>
+                      {% else %}
+                        <i data-lucide="bell" class="w-4 h-4 text-slate-600"></i>
+                      {% endif %}
+                    </div>
+                  {% elif item.type == "status_change" %}
+                    <div class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <i data-lucide="refresh-cw" class="w-4 h-4 text-purple-600"></i>
+                    </div>
+                  {% else %}
+                    <div class="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center">
+                      <i data-lucide="user" class="w-4 h-4 text-slate-600"></i>
+                    </div>
+                  {% endif %}
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-800">
+                    {{ item.message }}
+                    {% if item.user %}
+                      <span class="text-slate-400 font-normal">by {{ item.user }}</span>
+                    {% endif %}
+                  </p>
+                  <p class="text-xs text-slate-400">{{ item.created_at|timesince }} ago</p>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-12 text-slate-400">
+            <i data-lucide="bell-off" class="w-8 h-8 mx-auto mb-3"></i>
+            <p class="text-sm">No activity yet</p>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="space-y-8">
+
+      <!-- CUSTOMER CARD -->
+      <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <h3 class="text-xs uppercase tracking-widest text-slate-400 mb-4">Customer</h3>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-semibold">
+            {{ order.customer.name|slice:":2"|upper }}
+          </div>
+          <div>
+            <p class="font-semibold text-slate-900">{{ order.customer.name }}</p>
+            <p class="text-xs text-slate-400">Customer</p>
+          </div>
+        </div>
+        <div class="space-y-2 text-sm text-slate-600">
+          {% if order.customer.email %}
+            <div class="flex items-center gap-2"><i data-lucide="mail" class="w-4 h-4 text-slate-400"></i>{{ order.customer.email }}</div>
+          {% endif %}
+          {% if order.customer.phone %}
+            <div class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4 text-slate-400"></i>{{ order.customer.phone }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- QUICK ACTIONS -->
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <h3 class="font-semibold text-slate-900 mb-4">Quick Actions</h3>
+        <div class="space-y-3">
+          <a href="{% url 'orders:update' order.id %}" class="block w-full text-center px-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition">
+            Edit Order
+          </a>
+          <a href="{% url 'orders:list' %}" class="block w-full text-center px-4 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 transition">
+            Back to Orders
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  lucide.createIcons();
+});
+</script>
+
+{% endblock %}

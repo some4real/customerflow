@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accept Invitation - CustomerFlow</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest"></script>
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 to-indigo-50 text-slate-900 min-h-screen flex items-center justify-center">
+
+<div class="w-full max-w-md px-6">
+  <!-- Header -->
+  <div class="text-center mb-8">
+    <div class="flex items-center justify-center gap-2 font-bold text-2xl mb-4">
+      <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white">C</div>
+      <span>CustomerFlow</span>
+    </div>
+    <h1 class="text-3xl font-bold mb-2">Join Your Team</h1>
+    <p class="text-slate-600">You've been invited to join <span class="font-semibold">{{ organization.name }}</span></p>
+  </div>
+
+  <!-- Invitation Info -->
+  <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8">
+    <div class="flex gap-3">
+      <i data-lucide="mail-check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
+      <div>
+        <p class="text-sm font-medium text-blue-900">Invitation Details</p>
+        <p class="text-sm text-blue-700 mt-1">Email: <strong>{{ email }}</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+  {% for message in messages %}
+  <div class="mb-4 p-4 rounded-lg {% if message.tags %}bg-{{ message.tags }}-50 text-{{ message.tags }}-700 border border-{{ message.tags }}-200{% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
+    <div class="flex gap-2 items-center">
+      <i data-lucide="alert-circle" class="w-5 h-5"></i>
+      {{ message }}
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <!-- Form -->
+  <form method="post" class="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+      {% for error in form.non_field_errors %}
+      <p class="text-sm text-red-700 flex items-center gap-2">
+        <i data-lucide="alert-circle" class="w-4 h-4"></i>
+        {{ error }}
+      </p>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Name -->
+    <div>
+      <label class="block text-sm font-semibold text-slate-900 mb-2">
+        Your Full Name <span class="text-red-500">*</span>
+      </label>
+      {{ form.name }}
+      {% if form.name.errors %}
+      <p class="text-sm text-red-600 mt-1 flex items-center gap-1">
+        <i data-lucide="alert-circle" class="w-4 h-4"></i>
+        {{ form.name.errors.0 }}
+      </p>
+      {% endif %}
+    </div>
+
+    <!-- Password -->
+    <div>
+      <label class="block text-sm font-semibold text-slate-900 mb-2">
+        Password <span class="text-red-500">*</span>
+      </label>
+      {{ form.password }}
+      {% if form.password.errors %}
+      <p class="text-sm text-red-600 mt-1 flex items-center gap-1">
+        <i data-lucide="alert-circle" class="w-4 h-4"></i>
+        {{ form.password.errors.0 }}
+      </p>
+      {% endif %}
+    </div>
+
+    <!-- Confirm Password -->
+    <div>
+      <label class="block text-sm font-semibold text-slate-900 mb-2">
+        Confirm Password <span class="text-red-500">*</span>
+      </label>
+      {{ form.password_confirm }}
+      {% if form.password_confirm.errors %}
+      <p class="text-sm text-red-600 mt-1 flex items-center gap-1">
+        <i data-lucide="alert-circle" class="w-4 h-4"></i>
+        {{ form.password_confirm.errors.0 }}
+      </p>
+      {% endif %}
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 rounded-xl hover:shadow-lg transition">
+      Accept Invitation & Create Account
+    </button>
+  </form>
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,275 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="max-w-6xl mx-auto">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+
+        <div class="flex items-center gap-3">
+
+            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                <i data-lucide="workflow" class="w-5 h-5 text-blue-600"></i>
+            </div>
+
+            <div>
+                <h1 class="text-xl font-semibold text-slate-900">
+                    Workflow Stages
+                </h1>
+                <p class="text-sm text-slate-500">
+                    Manage the stages used in your order fulfillment pipeline.
+                </p>
+            </div>
+
+        </div>
+
+        <a href="{% url 'workflows:create' %}"
+           class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-sm">
+
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Add Stage
+
+        </a>
+
+    </div>
+
+
+    <!-- Table -->
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full text-sm">
+
+                <!-- Table Header -->
+                <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wide">
+
+                    <tr>
+                        <th class="px-6 py-4 text-left">Position</th>
+                        <th class="px-6 py-4 text-left">Stage</th>
+                        <th class="px-6 py-4 text-left">Color</th>
+                        <th class="px-6 py-4 text-left">Final Stage</th>
+                        <th class="px-6 py-4 text-right">Actions</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody class="divide-y divide-slate-100">
+
+                    {% for stage in stages %}
+
+                    <tr class="hover:bg-slate-50 transition group">
+
+                        <!-- Position -->
+                        <td class="px-6 py-4 font-medium text-slate-700">
+                            {{ stage.position }}
+                        </td>
+
+
+                        <!-- Stage -->
+                        <td class="px-6 py-4">
+
+                            <div class="flex items-center gap-3">
+
+                                <span class="w-2.5 h-2.5 rounded-full bg-{{ stage.color }}-500"></span>
+
+                                <span class="font-medium text-slate-900">
+                                    {{ stage.name }}
+                                </span>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- Color -->
+                        <td class="px-6 py-4">
+
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-{{ stage.color }}-100 text-{{ stage.color }}-700">
+                                {{ stage.color|capfirst }}
+                            </span>
+
+                        </td>
+
+
+                        <!-- Final Stage -->
+                        <td class="px-6 py-4">
+
+                            {% if stage.is_final %}
+
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 rounded-md">
+                                <i data-lucide="check-circle" class="w-3 h-3"></i>
+                                Completed
+                            </span>
+
+                            {% else %}
+
+                            <span class="text-slate-400 text-xs">
+                                —
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- Actions -->
+                        <td class="px-6 py-4 text-right">
+
+                            <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition">
+
+                                <!-- Edit -->
+                                <a href="{% url 'workflows:edit' stage.pk %}"
+                                   class="p-2 rounded-lg hover:bg-slate-100 transition"
+                                   title="Edit Stage">
+
+                                    <i data-lucide="pencil" class="w-4 h-4 text-slate-600"></i>
+
+                                </a>
+
+                                <!-- Delete -->
+                                <button onclick="openDeleteModal('{{ stage.pk }}','{{ stage.name }}')"
+                                        class="p-2 rounded-lg hover:bg-red-50 transition"
+                                        title="Delete Stage">
+
+                                    <i data-lucide="trash-2" class="w-4 h-4 text-rose-600"></i>
+
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <!-- Empty State -->
+                    <tr>
+
+                        <td colspan="5" class="py-16 text-center">
+
+                            <div class="flex flex-col items-center text-slate-400">
+
+                                <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+                                    <i data-lucide="workflow" class="w-7 h-7 text-slate-300"></i>
+                                </div>
+
+                                <p class="text-sm font-medium text-slate-500">
+                                    No workflow stages yet
+                                </p>
+
+                                <p class="text-xs text-slate-400 mt-1">
+                                    Create stages to build your order pipeline
+                                </p>
+
+                                <a href="{% url 'workflows:create' %}"
+                                   class="mt-4 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                    Add First Stage
+
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- DELETE MODAL -->
+
+<div id="deleteModal"
+     class="fixed inset-0 hidden items-center justify-center bg-black/40 z-50">
+
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+
+        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+            <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600"></i>
+        </div>
+
+        <h3 class="text-lg font-semibold text-slate-900 mb-2">
+            Delete Stage
+        </h3>
+
+        <p class="text-sm text-slate-500 mb-6">
+            Are you sure you want to delete
+            <span id="deleteStageName" class="font-medium text-slate-700"></span>?
+            This action cannot be undone.
+        </p>
+
+        <div class="flex justify-end gap-3">
+
+            <button onclick="closeDeleteModal()"
+                    class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">
+                Cancel
+            </button>
+
+            <form id="deleteForm" method="post">
+                {% csrf_token %}
+                <button type="submit"
+                        class="px-4 py-2 text-sm font-medium text-red-500 bg-rose-600 hover:bg-rose-700 rounded-lg">
+                    Delete
+                </button>
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function openDeleteModal(stageId, stageName) {
+
+    const modal = document.getElementById("deleteModal");
+    const name = document.getElementById("deleteStageName");
+    const form = document.getElementById("deleteForm");
+
+    name.textContent = stageName;
+
+    form.action = `/workflows/${stageId}/delete/`;
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+}
+
+function closeDeleteModal() {
+
+    const modal = document.getElementById("deleteModal");
+
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+}
+
+document.addEventListener("keydown", function(e){
+
+    if(e.key === "Escape"){
+        closeDeleteModal()
+    }
+
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+});
+
+</script>
+
+{% endblock %}

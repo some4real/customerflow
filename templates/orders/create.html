@@ -1,0 +1,206 @@
+<!-- templates/orders/create.html -->
+
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="max-w-2xl mx-auto">
+
+  <!-- Page Header -->
+  <div class="mb-8">
+    <h1 class="text-2xl md:text-3xl font-bold text-slate-900 font-display tracking-tight">
+      Create New Order
+    </h1>
+    <p class="text-slate-500 mt-2">
+      Fill in the order details below
+    </p>
+  </div>
+
+  <!-- Form Card -->
+  <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 md:p-8">
+
+    <form method="post" class="space-y-6">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div class="bg-rose-50 border border-rose-200 rounded-xl p-4">
+        <div class="flex gap-3">
+          <i data-lucide="alert-circle" class="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5"></i>
+          <div>
+            <p class="text-sm font-semibold text-rose-900">Error</p>
+            {% for error in form.non_field_errors %}
+              <p class="text-sm text-rose-700 mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Title Field -->
+      <div>
+        <label for="{{ form.title.id_for_label }}" class="block text-sm font-semibold text-slate-900 mb-2">
+          Order Title <span class="text-rose-500">*</span>
+        </label>
+        <input
+          type="text"
+          name="{{ form.title.name }}"
+          id="{{ form.title.id_for_label }}"
+          placeholder="e.g., Premium Package Delivery"
+          required
+          class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition text-slate-900 placeholder-slate-400"
+          value="{{ form.title.value|default:'' }}"
+        />
+        {% if form.title.errors %}
+          <p class="text-sm text-rose-600 mt-2 flex items-center gap-1.5">
+            <i data-lucide="alert-circle" class="w-4 h-4"></i>
+            {{ form.title.errors.0 }}
+          </p>
+        {% endif %}
+      </div>
+
+      <!-- Description Field -->
+      <div>
+        <label for="{{ form.description.id_for_label }}" class="block text-sm font-semibold text-slate-900 mb-2">
+          Description
+        </label>
+        <textarea
+          name="{{ form.description.name }}"
+          id="{{ form.description.id_for_label }}"
+          placeholder="Add order details, notes, or special instructions..."
+          rows="4"
+          class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition text-slate-900 placeholder-slate-400 resize-none"
+        >{{ form.description.value|default:'' }}</textarea>
+        {% if form.description.errors %}
+          <p class="text-sm text-rose-600 mt-2 flex items-center gap-1.5">
+            <i data-lucide="alert-circle" class="w-4 h-4"></i>
+            {{ form.description.errors.0 }}
+          </p>
+        {% endif %}
+      </div>
+
+      <!-- Customer Field -->
+      <div>
+        <label for="{{ form.customer.id_for_label }}" class="block text-sm font-semibold text-slate-900 mb-2">
+          Customer <span class="text-rose-500">*</span>
+        </label>
+        <select
+          name="{{ form.customer.name }}"
+          id="{{ form.customer.id_for_label }}"
+          required
+          class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition text-slate-900"
+          onchange="handleCustomerSelect(this)"
+        >
+          <option value="">-- Select a Customer --</option>
+          {% for value, label in form.customer.field.choices %}
+            {% if value %}
+              <option value="{{ value }}" {% if form.customer.value == value %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endif %}
+          {% endfor %}
+          <option value="add_new" style="border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 8px;">
+            ➕ Add New Customer
+          </option>
+        </select>
+        {% if form.customer.errors %}
+          <p class="text-sm text-rose-600 mt-2 flex items-center gap-1.5">
+            <i data-lucide="alert-circle" class="w-4 h-4"></i>
+            {{ form.customer.errors.0 }}
+          </p>
+        {% endif %}
+      </div>
+
+      <!-- Status Field -->
+      <div>
+        <label for="{{ form.status.id_for_label }}" class="block text-sm font-semibold text-slate-900 mb-2">
+          Status <span class="text-rose-500">*</span>
+        </label>
+        <select
+          name="{{ form.status.name }}"
+          id="{{ form.status.id_for_label }}"
+          required
+          class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition text-slate-900"
+        >
+          <option value="">-- Select a Status --</option>
+          {% for value, label in form.status.field.choices %}
+            {% if value %}
+              <option value="{{ value }}" {% if form.status.value == value %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        {% if form.status.errors %}
+          <p class="text-sm text-rose-600 mt-2 flex items-center gap-1.5">
+            <i data-lucide="alert-circle" class="w-4 h-4"></i>
+            {{ form.status.errors.0 }}
+          </p>
+        {% endif %}
+      </div>
+
+      <!-- Total Amount Field (if applicable) -->
+      {% if form.total_amount %}
+      <div>
+        <label for="{{ form.total_amount.id_for_label }}" class="block text-sm font-semibold text-slate-900 mb-2">
+          Total Amount
+        </label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 font-semibold">$</span>
+          <input
+            type="number"
+            name="{{ form.total_amount.name }}"
+            id="{{ form.total_amount.id_for_label }}"
+            placeholder="0.00"
+            step="0.01"
+            class="w-full pl-7 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition text-slate-900 placeholder-slate-400"
+            value="{{ form.total_amount.value|default:'' }}"
+          />
+        </div>
+        {% if form.total_amount.errors %}
+          <p class="text-sm text-rose-600 mt-2 flex items-center gap-1.5">
+            <i data-lucide="alert-circle" class="w-4 h-4"></i>
+            {{ form.total_amount.errors.0 }}
+          </p>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Form Actions -->
+      <div class="flex gap-3 pt-6 border-t border-slate-200">
+        <button
+          type="submit"
+          class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/20 hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/30 transition-all duration-200"
+        >
+          <i data-lucide="check" class="w-4 h-4"></i>
+          Create Order
+        </button>
+        <a
+          href="{% url 'orders:list' %}"
+          class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-slate-100 text-slate-900 font-semibold rounded-xl hover:bg-slate-200 transition-all duration-200"
+        >
+          <i data-lucide="x" class="w-4 h-4"></i>
+          Cancel
+        </a>
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+<script>
+  // Handle customer select change
+  function handleCustomerSelect(selectElement) {
+    if (selectElement.value === 'add_new') {
+      // Redirect to customer create page
+      window.location.href = "{% url 'customers:create' %}";
+    }
+  }
+
+  // Reinitialize Lucide icons after page load
+  document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+  });
+</script>
+
+{% endblock %}
