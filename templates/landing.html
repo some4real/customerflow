@@ -14,30 +14,58 @@
 <!-- NAVBAR -->
 <header class="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-slate-200">
   <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <!-- Logo -->
     <div class="flex items-center gap-2 font-bold text-xl">
       <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white font-bold">C</div>
       <span class="text-slate-900">CustomerFlow</span>
     </div>
 
     {% if user.is_authenticated %}
+    <!-- Desktop nav -->
     <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
       <a href="{% url 'dashboard:home' %}" class="hover:text-blue-600 transition">Dashboard</a>
       <a href="{% url 'orders:list' %}" class="hover:text-blue-600 transition">Orders</a>
-      <a href="{% url 'customers:list' %}" class="hover:text-blue-600 transition">Customers</a> 
-     {% else %} 
+      <a href="{% url 'customers:list' %}" class="hover:text-blue-600 transition">Customers</a>
+    </nav>
 
+    <!-- Mobile hamburger -->
+    <div class="md:hidden flex items-center">
+      <button id="mobile-menu-btn" class="p-2 rounded-md hover:bg-slate-100 transition">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+    {% else %}
+    <!-- Public nav -->
     <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
       <a href="#features" class="hover:text-blue-600 transition">Features</a>
       <a href="#how" class="hover:text-blue-600 transition">How it Works</a>
       <a href="#pricing" class="hover:text-blue-600 transition">Pricing</a>
     </nav>
 
-    <div class="flex items-center gap-3">
+    <div class="hidden md:flex items-center gap-3">
       <a href="{% url 'accounts:login' %}" class="text-sm font-medium text-slate-600 hover:text-blue-600 transition">Sign In</a>
       <a href="{% url 'accounts:register_organization' %}" class="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md">Start Free</a>
     </div>
+    {% endif %}
   </div>
-      {% endif %}
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="hidden md:hidden flex-col px-6 pb-4 space-y-2 bg-white border-t border-slate-200">
+    {% if user.is_authenticated %}
+      <a href="{% url 'dashboard:home' %}" class="block py-2 text-slate-700 hover:text-blue-600">Dashboard</a>
+      <a href="{% url 'orders:list' %}" class="block py-2 text-slate-700 hover:text-blue-600">Orders</a>
+      <a href="{% url 'customers:list' %}" class="block py-2 text-slate-700 hover:text-blue-600">Customers</a>
+    {% else %}
+      <a href="#features" class="block py-2 text-slate-700 hover:text-blue-600">Features</a>
+      <a href="#how" class="block py-2 text-slate-700 hover:text-blue-600">How it Works</a>
+      <a href="#pricing" class="block py-2 text-slate-700 hover:text-blue-600">Pricing</a>
+      <a href="{% url 'accounts:login' %}" class="block py-2 text-slate-700 hover:text-blue-600">Sign In</a>
+      <a href="{% url 'accounts:register_organization' %}" class="block py-2 text-white bg-blue-600 rounded-lg text-center hover:bg-blue-700 transition">Start Free</a>
+    {% endif %}
+  </div>
 </header>
 
 
@@ -857,6 +885,13 @@
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     lucide.createIcons();
+  });
+</script>
+<script>
+  const btn = document.getElementById('mobile-menu-btn');
+  const menu = document.getElementById('mobile-menu');
+  btn?.addEventListener('click', () => {
+    menu.classList.toggle('hidden');
   });
 </script>
 
