@@ -1,18 +1,18 @@
 from .base import *
 import os
 from dotenv import load_dotenv
-load_dotenv()
+import dj_database_url   # ✅ THIS WAS MISSING
 
+load_dotenv()
 
 DATABASES = {
     'default': dj_database_url.config(
         default=os.getenv("DATABASE_URL")
-        )
-
+    )
 }
 
 DEBUG = False
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
