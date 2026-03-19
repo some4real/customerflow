@@ -12,12 +12,18 @@ CHANNEL_HANDLERS = {
     "whatsapp": send_whatsapp_notification,
 }
 
-@shared_task(bind=True, max_retries=3, default_retry_delay=5)
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=60,
+    retry_jitter=True,
+    max_retries=3
+)
 def send_notification_task(self, channel, recipient, message, log_id):
     try:
         log = NotificationLog.objects.get(id=log_id)
     except NotificationLog.DoesNotExist:
-        # Log missing notification
         return
 
     try:
@@ -28,6 +34,6 @@ def send_notification_task(self, channel, recipient, message, log_id):
         log.status = "failed"
         log.error_message = f"{type(exc).__name__}: {str(exc)}"
         log.save()
-        raise self.retry(exc=exc)
+        raise exc 
 
     log.save()
