@@ -42,6 +42,9 @@
       <button id="bulkUpdateBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
         Update Selected
       </button>
+      <button id="bulkDeleteBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-700">
+        Delete Selected
+      </button>
 
       <span id="selectedCount" class="text-sm text-slate-500 ml-auto">0 selected</span>
     </div>
@@ -109,11 +112,17 @@
               </select>
             </td>
             <td class="px-6 py-4 text-sm text-slate-500">{{ order.created_at|date:"M d, Y" }}</td>
-            <td class="px-6 py-4 text-sm">
-              <a href="{% url 'orders:detail' order.id %}" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
-                <i data-lucide="eye" class="w-3.5 h-3.5"></i> View
-              </a>
-            </td>
+              <td class="px-6 py-4 text-sm flex gap-2">
+                <a href="{% url 'orders:detail' order.id %}"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
+                  <i data-lucide="eye" class="w-3.5 h-3.5"></i> View
+                </a>
+
+                <button class="delete-order-btn inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-600 bg-red-600 rounded-lg hover:bg-red-300 transition"
+                        data-order-id="{{ order.id }}" data-order-number="{{ order.order_number }}">
+                  <i data-lucide="trash" class="w-3.5 h-3.5"></i> Delete
+                </button>
+              </td>
           </tr>
           {% empty %}
           <tr>
@@ -202,207 +211,343 @@
   </div>
 </div>
 
+<!-- SINGLE & BULK DELETE MODAL -->
+<div id="deleteModal" class="fixed inset-0 hidden z-50 bg-black/40 backdrop-blur-sm">
+  <div class="min-h-full flex items-center justify-center p-4">
+    <div id="deleteModalCard"
+         class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 transform scale-95 opacity-0 transition-all duration-200">
+
+      <h3 class="text-lg font-semibold text-slate-900" id="deleteModalTitle">
+        Confirm Deletion
+      </h3>
+      <p class="text-sm text-slate-500 mt-2" id="deleteModalMessage">
+        Are you sure you want to delete the selected order(s)?
+      </p>
+
+      <div class="flex justify-end gap-3 mt-6">
+        <button id="cancelDelete"
+          class="px-4 py-2 text-sm font-medium bg-slate-100 rounded-lg hover:bg-slate-200 transition">
+          Cancel
+        </button>
+
+        <button id="confirmDelete"
+          class="px-4 py-2 text-sm font-semibold text-slate-100 bg-red-600 rounded-lg hover:bg-red-500 transition">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+/* ---------------- CSRF HELPER ---------------- */
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        document.cookie.split(';').forEach(cookie => {
+            const [key, value] = cookie.trim().split('=');
+            if (key === name) cookieValue = decodeURIComponent(value);
+        });
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+/* ---------------- GLOBAL STATE ---------------- */
 let selectAllAcross = false;
 let excludedIds = [];
 let pendingStatusChange = null;
+const totalOrders = {{ total_orders }};
 
 /* ---------------- HELPERS ---------------- */
-
-function getSelectedOrders(){
-  return Array.from(document.querySelectorAll(".order-checkbox:checked")).map(cb=>cb.value);
+function getSelectedOrders() {
+    return Array.from(document.querySelectorAll(".order-checkbox:checked"))
+        .map(cb => cb.value);
 }
 
-function updateSelectedCount(){
-  const selected = getSelectedOrders().length;
-  document.getElementById("selectedCount").innerText = selected + " selected";
+function updateSelectedCount() {
+    const selected = getSelectedOrders().length;
+    document.getElementById("selectedCount").innerText = selected + " selected";
 
-  const banner = document.getElementById("selectAllBanner");
+    const banner = document.getElementById("selectAllBanner");
 
-  if(selected > 0){
-    banner.classList.remove("hidden");
-    banner.classList.add("flex");
-    document.getElementById("bannerText").innerText =
-      `All ${selected} orders on this page selected.`;
-  } else {
-    banner.classList.add("hidden");
-    banner.classList.remove("flex");
-    selectAllAcross = false;
-    excludedIds = [];
-  }
+    if (selected > 0) {
+        banner.classList.remove("hidden");
+        banner.classList.add("flex");
+
+        if (!selectAllAcross) {
+            document.getElementById("bannerText").innerText =
+                `All ${selected} orders on this page selected.`;
+        } else {
+            document.getElementById("bannerText").innerText =
+                `All ${totalOrders} orders are selected across all pages`;
+        }
+    } else {
+        banner.classList.add("hidden");
+        banner.classList.remove("flex");
+
+        selectAllAcross = false;
+        excludedIds = [];
+    }
 }
 
-/* ---------------- MODALS (FIXED) ---------------- */
+function updateTableCount() {
+    const rows = document.querySelectorAll("tbody tr").length;
+    const totalText = document.querySelector(".text-sm.text-slate-500");
 
-function openModal(modal, card){
-  modal.classList.remove("hidden");
-
-  setTimeout(()=>{
-    card.classList.remove("opacity-0","scale-95");
-    card.classList.add("opacity-100","scale-100");
-  },10);
+    if (totalText) {
+        totalText.innerText = `Showing ${rows} of ${totalOrders} orders`;
+    }
 }
 
-function closeModal(modal, card){
-  card.classList.add("opacity-0","scale-95");
-  card.classList.remove("opacity-100","scale-100");
+function openModal(modal, card) {
+    modal.classList.remove("hidden");
+    setTimeout(() => {
+        card.classList.remove("opacity-0", "scale-95");
+        card.classList.add("opacity-100", "scale-100");
+    }, 10);
+}
 
-  setTimeout(()=>{
-    modal.classList.add("hidden");
-  },200);
+function closeModal(modal, card) {
+    card.classList.add("opacity-0", "scale-95");
+    card.classList.remove("opacity-100", "scale-100");
+    setTimeout(() => modal.classList.add("hidden"), 200);
+}
+
+function showToast(message) {
+    alert(message); // Replace later with toast system
 }
 
 /* ---------------- INIT ---------------- */
+document.addEventListener("DOMContentLoaded", () => {
 
-document.addEventListener("DOMContentLoaded",()=>{
+    let deleteTarget = null;
 
-  const bulkModal = document.getElementById("bulkModal");
-  const bulkCard = document.getElementById("bulkModalCard");
+    const deleteModal = document.getElementById("deleteModal");
+    const deleteCard = document.getElementById("deleteModalCard");
 
-  const statusModal = document.getElementById("statusModal");
-  const statusCard = document.getElementById("statusModalCard");
+    const bulkModal = document.getElementById("bulkModal");
+    const bulkCard = document.getElementById("bulkModalCard");
 
-  /* -------- SELECT -------- */
+    const statusModal = document.getElementById("statusModal");
+    const statusCard = document.getElementById("statusModalCard");
 
-  document.getElementById("select-all").addEventListener("change",function(){
-    document.querySelectorAll(".order-checkbox").forEach(cb=>cb.checked=this.checked);
-    updateSelectedCount();
-  });
-
-  document.querySelectorAll(".order-checkbox")
-    .forEach(cb=>cb.addEventListener("change",updateSelectedCount));
-
-  document.getElementById("selectAllAcrossBtn")
-    .addEventListener("click",()=>{
-      selectAllAcross = true;
-      document.getElementById("bannerText").innerText =
-        `All {{ total_orders }} orders are selected across all pages`;
+    /* -------- SELECT ALL -------- */
+    document.getElementById("select-all").addEventListener("change", function () {
+        document.querySelectorAll(".order-checkbox").forEach(cb => cb.checked = this.checked);
+        updateSelectedCount();
     });
 
-  /* -------- SINGLE STATUS -------- */
+    document.querySelectorAll(".order-checkbox").forEach(cb => {
+        cb.addEventListener("change", function () {
+            const id = this.value;
 
-  document.querySelectorAll(".status-dropdown").forEach(dd=>{
-    dd.addEventListener("change",e=>{
+            if (selectAllAcross) {
+                if (!this.checked) {
+                    if (!excludedIds.includes(id)) excludedIds.push(id);
+                } else {
+                    excludedIds = excludedIds.filter(eid => eid !== id);
+                }
+            }
 
-      const orderId = e.target.dataset.orderId;
-      const newStatusId = e.target.value;
-      const currentStatusId = e.target.dataset.currentStatus;
-
-      pendingStatusChange = {
-        orderId,
-        statusId: newStatusId,
-        currentStatusId,
-        element: e.target
-      };
-
-      document.getElementById("modalMessage").innerText =
-        `Change order #${orderId} status?`;
-
-      openModal(statusModal, statusCard);
+            updateSelectedCount();
+        });
     });
-  });
 
-  document.getElementById("cancelStatusChange").addEventListener("click",()=>{
-    if(pendingStatusChange){
-      const el = pendingStatusChange.element;
+    document.getElementById("selectAllAcrossBtn")?.addEventListener("click", () => {
+        selectAllAcross = true;
+        document.querySelectorAll(".order-checkbox").forEach(cb => cb.checked = true);
 
-      el.value = pendingStatusChange.currentStatusId;
-
-      const selectedOption = el.querySelector(
-        `option[value="${pendingStatusChange.currentStatusId}"]`
-      );
-
-      el.style.backgroundColor = selectedOption.dataset.color;
-    }
-
-    closeModal(statusModal, statusCard);
-    pendingStatusChange = null;
-  });
-
-  document.getElementById("confirmStatusChange").addEventListener("click",()=>{
-    if(!pendingStatusChange) return;
-
-    fetch("{% url 'orders:update_status' %}",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "X-CSRFToken":"{{ csrf_token }}"
-      },
-      body:JSON.stringify({
-        order_id: pendingStatusChange.orderId,
-        status_id: pendingStatusChange.statusId
-      })
-    })
-    .then(res=>res.json())
-    .then(data=>{
-      if(data.success){
-
-        const el = pendingStatusChange.element;
-
-        el.dataset.currentStatus = pendingStatusChange.statusId;
-
-        const selectedOption = el.options[el.selectedIndex];
-        el.style.backgroundColor = selectedOption.dataset.color;
-
-      } else {
-        alert(data.message);
-      }
-
-      closeModal(statusModal, statusCard);
-      pendingStatusChange = null;
+        document.getElementById("bannerText").innerText =
+            `All ${totalOrders} orders are selected across all pages`;
     });
-  });
 
-  /* -------- BULK -------- */
+    /* -------- SINGLE DELETE -------- */
+    document.querySelectorAll(".delete-order-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const orderId = btn.dataset.orderId;
+            const orderNumber = btn.dataset.orderNumber;
 
-  document.getElementById("bulkUpdateBtn").addEventListener("click",()=>{
-    if(!selectAllAcross && getSelectedOrders().length === 0){
-      alert("Select at least one order");
-      return;
-    }
+            deleteTarget = {
+                type: 'single',
+                ids: [orderId],
+                elements: [btn.closest("tr")]
+            };
 
-    openModal(bulkModal, bulkCard);
-  });
+            document.getElementById("deleteModalTitle").innerText = `Delete Order #${orderNumber}?`;
+            document.getElementById("deleteModalMessage").innerText =
+                `Are you sure you want to delete order #${orderNumber}?`;
 
-  document.getElementById("cancelBulkUpdate").addEventListener("click",()=>{
-    closeModal(bulkModal, bulkCard);
-  });
-
-  document.getElementById("confirmBulkUpdate").addEventListener("click",()=>{
-
-    const btn = document.getElementById("confirmBulkUpdate");
-    btn.disabled = true;
-    btn.innerText = "Updating...";
-
-    const orderIds = getSelectedOrders();
-    const statusId = document.getElementById("bulk-status").value;
-
-    fetch("{% url 'orders:batch_update_status' %}",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "X-CSRFToken":"{{ csrf_token }}"
-      },
-      body:JSON.stringify({
-        order_ids: selectAllAcross ? [] : orderIds,
-        select_all: selectAllAcross,
-        excluded_ids: excludedIds,
-        status_id: statusId
-      })
-    })
-    .then(res=>res.json())
-    .then(data=>{
-      if(data.success){
-        location.reload();
-      } else {
-        alert(data.message);
-        btn.disabled = false;
-        btn.innerText = "Confirm";
-      }
+            openModal(deleteModal, deleteCard);
+        });
     });
-  });
+
+    /* -------- BULK DELETE -------- */
+    document.getElementById("bulkDeleteBtn")?.addEventListener("click", () => {
+        const orderIds = getSelectedOrders();
+
+        if (!selectAllAcross && orderIds.length === 0) {
+            showToast("Select at least one order");
+            return;
+        }
+
+        deleteTarget = {
+            type: 'bulk',
+            ids: orderIds,
+            elements: orderIds.map(id =>
+                document.querySelector(`.order-checkbox[value="${id}"]`).closest("tr")
+            )
+        };
+
+        document.getElementById("deleteModalTitle").innerText =
+            `Delete ${selectAllAcross ? totalOrders : orderIds.length} orders?`;
+
+        openModal(deleteModal, deleteCard);
+    });
+
+    document.getElementById("cancelDelete").addEventListener("click", () => {
+        deleteTarget = null;
+        closeModal(deleteModal, deleteCard);
+    });
+
+    document.getElementById("confirmDelete").addEventListener("click", () => {
+        if (!deleteTarget) return;
+
+        const btn = document.getElementById("confirmDelete");
+        btn.disabled = true;
+        btn.innerText = "Deleting...";
+
+        const url = deleteTarget.type === 'single'
+            ? `/orders/delete/${deleteTarget.ids[0]}/`
+            : "{% url 'orders:bulk_delete' %}";
+
+        const body = deleteTarget.type === 'bulk'
+            ? JSON.stringify({
+                order_ids: deleteTarget.ids,
+                select_all: selectAllAcross,
+                excluded_ids: excludedIds
+            })
+            : null;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                "X-CSRFToken": csrftoken,
+                "Content-Type": "application/json"
+            },
+            body: body
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerText = "Delete";
+
+            if (data.success) {
+                deleteTarget.elements.forEach(el => el.remove());
+                updateSelectedCount();
+                updateTableCount();
+
+                showToast(deleteTarget.type === "single"
+                    ? data.message
+                    : `${data.deleted_count} orders deleted`);
+            } else {
+                showToast(data.message);
+            }
+
+            deleteTarget = null;
+            closeModal(deleteModal, deleteCard);
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.innerText = "Delete";
+            showToast("Delete failed");
+        });
+    });
+
+    /* -------- STATUS CHANGE -------- */
+    document.querySelectorAll(".status-dropdown").forEach(dd => {
+        dd.addEventListener("change", e => {
+            pendingStatusChange = {
+                orderId: e.target.dataset.orderId,
+                statusId: e.target.value,
+                currentStatusId: e.target.dataset.currentStatus,
+                element: e.target
+            };
+            openModal(statusModal, statusCard);
+        });
+    });
+
+    document.getElementById("cancelStatusChange").addEventListener("click", () => {
+        if (pendingStatusChange) {
+            const el = pendingStatusChange.element;
+            el.value = pendingStatusChange.currentStatusId;
+        }
+        closeModal(statusModal, statusCard);
+    });
+
+    document.getElementById("confirmStatusChange").addEventListener("click", () => {
+        fetch("{% url 'orders:update_status' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken
+            },
+            body: JSON.stringify({
+                order_id: pendingStatusChange.orderId,
+                status_id: pendingStatusChange.statusId
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const el = pendingStatusChange.element;
+                el.dataset.currentStatus = pendingStatusChange.statusId;
+            }
+            closeModal(statusModal, statusCard);
+        });
+    });
+
+    /* -------- BULK STATUS -------- */
+    document.getElementById("bulkUpdateBtn").addEventListener("click", () => {
+        if (!selectAllAcross && getSelectedOrders().length === 0) {
+            showToast("Select orders first");
+            return;
+        }
+        openModal(bulkModal, bulkCard);
+    });
+
+    document.getElementById("confirmBulkUpdate").addEventListener("click", () => {
+        const btn = document.getElementById("confirmBulkUpdate");
+        btn.disabled = true;
+        btn.innerText = "Updating...";
+
+        fetch("{% url 'orders:batch_update_status' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken
+            },
+            body: JSON.stringify({
+                order_ids: selectAllAcross ? [] : getSelectedOrders(),
+                select_all: selectAllAcross,
+                excluded_ids: excludedIds,
+                status_id: document.getElementById("bulk-status").value
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerText = "Confirm";
+
+            if (data.success) {
+                showToast("Updated successfully");
+                closeModal(bulkModal, bulkCard);
+            } else {
+                showToast(data.message);
+            }
+        });
+    });
 
 });
 </script>
-
 {% endblock %}

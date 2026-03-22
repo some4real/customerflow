@@ -1,12 +1,14 @@
 import json
 import logging
 from django.shortcuts import render, get_object_or_404
-from django.views.generic import ListView, CreateView, DetailView, UpdateView
+from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView, View
 from django.urls import reverse
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_http_methods
 from django.contrib.auth.decorators import login_required
 from orders.models import Order, OrderActivity
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
 
 from .models import Order
 from customers.models import Customer
@@ -16,6 +18,8 @@ from services.notifications.dispatcher import dispatch_order_notification
 
 logger = logging.getLogger(__name__)
 
+@login_required
+@require_POST
 def bulk_update_orders(orders, status, user=None):
     """
     Bulk update orders with notifications and internal logs.
@@ -199,6 +203,9 @@ class OrderUpdateView(UpdateView):
     def get_success_url(self):
         return reverse("orders:detail", kwargs={"pk": self.object.pk})
 
+def OrderDeleteView():
+    pass  # Placeholder for future implementation
+
 
 # AJAX ENDPOINTS
 
@@ -221,7 +228,7 @@ def update_order_status(request):
 
         # Update order
         order.status = status
-        order.save(update_fields=["status"])
+        order.save(user=request.user)
 
         # Prepare message
         message = (
@@ -258,16 +265,12 @@ def update_order_status(request):
 
 @login_required
 @require_POST
-def batch_update_order_status(request):
-    """
-    Bulk update orders with support for:
-    - select all across pages
-    - excluded IDs
-    """
+def batch_update_status(request):
     try:
         data = json.loads(request.body)
 
         status_id = data.get("status_id")
+        order_ids = data.get("order_ids", [])
         select_all = data.get("select_all", False)
         excluded_ids = data.get("excluded_ids", [])
 
@@ -277,78 +280,132 @@ def batch_update_order_status(request):
             organization=request.user.organization
         )
 
-        # Determine queryset
         if select_all:
             orders = Order.objects.filter(
                 organization=request.user.organization
             ).exclude(id__in=excluded_ids)
-
         else:
-            order_ids = data.get("order_ids", [])
-
-            if not order_ids:
-                return JsonResponse({
-                    "success": False,
-                    "message": "No orders selected"
-                })
-
             orders = Order.objects.filter(
                 id__in=order_ids,
                 organization=request.user.organization
             )
 
-        # Use service layer
-        bulk_update_orders(orders, status)
+        if not orders.exists():
+            return JsonResponse({"success": False}, status=404)
 
-        return JsonResponse({
-            "success": True,
-            "updated_count": orders.count()
-        })
+        with transaction.atomic():
+            for order in orders:
+                order.status = status
+                order.save(user=request.user)
+
+                # ✅ Notification per order
+                if status and getattr(status, "auto_notify", True):
+                    message = (
+                        status.customer_message.format(
+                            customer_name=order.customer.name,
+                            order_number=order.order_number
+                        )
+                        if status.customer_message
+                        else f"Order {order.order_number} updated to {status.name}"
+                    )
+
+                    dispatch_order_notification(order, message, force_all_channels=True)
+
+        return JsonResponse({"success": True})
 
     except Exception as e:
-        logger.exception("Batch update failed")
+        return JsonResponse({"success": False, "message": str(e)}, status=500)
+    
 
-        return JsonResponse({
-            "success": False,
-            "message": str(e)
-        }, status=500)
+# Single Order Delete
+class OrderDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        try:
+            order = Order.objects.get(
+                pk=pk,
+                organization=request.user.organization
+            )
+
+            order_number = order.order_number
 
 
-def batch_update_order_status(request):
-    if request.method != "POST":
-        return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
+            order.delete()
 
+            return JsonResponse({
+                "success": True,
+                "message": f"Order {order_number} deleted"
+            })
+
+        except Order.DoesNotExist:
+            return JsonResponse({
+                "success": False,
+                "message": "Order not found"
+            }, status=404)
+        
+
+@login_required
+@require_POST
+def bulk_delete_orders(request):
     try:
         data = json.loads(request.body)
-        status_id = data.get("status_id")
+
         select_all = data.get("select_all", False)
         excluded_ids = data.get("excluded_ids", [])
         order_ids = data.get("order_ids", [])
 
-        status = get_object_or_404(
-            WorkflowStage,
-            id=status_id,
-            organization=request.user.organization
-        )
-
-        # Determine queryset
         if select_all:
             orders = Order.objects.filter(
                 organization=request.user.organization
             ).exclude(id__in=excluded_ids)
         else:
             if not order_ids:
-                return JsonResponse({"success": False, "message": "No orders selected"})
+                return JsonResponse({
+                    "success": False,
+                    "message": "No orders selected"
+                }, status=400)
+
             orders = Order.objects.filter(
                 id__in=order_ids,
                 organization=request.user.organization
             )
 
-        # Bulk update with user info
-        bulk_update_orders(orders, status, user=request.user)
+        if not orders.exists():
+            return JsonResponse({
+                "success": False,
+                "message": "No valid orders found"
+            }, status=404)
 
-        return JsonResponse({"success": True, "updated_count": orders.count()})
+        order_numbers = list(
+            orders.values_list("order_number", flat=True)
+        )
+
+        deleted_count = orders.count()
+
+        # ✅ Wrap everything safely
+        with transaction.atomic():
+
+            # ✅ Bulk log BEFORE delete
+            activities = [
+                OrderActivity(
+                    order=order,
+                    message=f"Order {order.order_number} deleted",
+                    type="deletion",
+                    created_by=request.user
+                )
+                for order in orders
+            ]
+            OrderActivity.objects.bulk_create(activities)
+
+            # ✅ Delete after logging
+            orders.delete()
+
+        return JsonResponse({
+            "success": True,
+            "deleted_count": deleted_count
+        })
 
     except Exception as e:
-        logger.exception("Batch update failed")
-        return JsonResponse({"success": False, "message": str(e)}, status=500)
+        return JsonResponse({
+            "success": False,
+            "message": str(e)
+        }, status=500)

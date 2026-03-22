@@ -38,7 +38,7 @@ class Order(models.Model):
 
         is_new = self.pk is None
 
-        # 🔹 Get old status efficiently (no full object load)
+        # Get old status (efficiently)
         old_status_id = None
         if self.pk:
             old_status_id = (
@@ -54,7 +54,7 @@ class Order(models.Model):
                 organization=self.organization
             ).order_by("position").first()
 
-        # Generate order number safely (no duplicates)
+        # Generate order number safely
         if not self.order_number:
             with transaction.atomic():
                 last_order = (
@@ -81,11 +81,9 @@ class Order(models.Model):
 
         super().save(*args, **kwargs)
 
-        # Import here to avoid circular imports
+        # ✅ ONLY logging (no external services here)
         from orders.models import OrderActivity
-        from services.notifications.dispatcher import dispatch_order_notification
 
-        # Activity logging
         if is_new:
             OrderActivity.objects.create(
                 order=self,
@@ -95,22 +93,12 @@ class Order(models.Model):
             )
 
         elif old_status_id != self.status_id:
-
             OrderActivity.objects.create(
                 order=self,
                 message=f"Status changed to {self.status.name}",
                 type="status_change",
                 created_by=user
             )
-
-            # Trigger notification (based on workflow stage)
-            if self.status and getattr(self.status, "auto_notify", True):
-                if self.status.customer_message:
-                    dispatch_order_notification(
-                        order=self,
-                        message=self.status.customer_message,
-                        channels=getattr(self.status, "notification_channels", None)
-                    )
 
     class Meta:
         unique_together = ('organization', 'order_number')
@@ -125,7 +113,9 @@ class Order(models.Model):
         return f"#{self.order_number} - {self.title} - {self.customer.name}"
 
 
+# -------------------------------
 # ACTIVITY / TIMELINE MODEL
+# -------------------------------
 
 class OrderActivity(models.Model):
 
@@ -138,7 +128,9 @@ class OrderActivity(models.Model):
 
     order = models.ForeignKey(
         "orders.Order",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,   # ✅ FIXED
+        null=True,
+        blank=True,
         related_name="activities"
     )
 
@@ -168,4 +160,6 @@ class OrderActivity(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.order.order_number} - {self.type}"
+        if self.order:
+            return f"{self.order.order_number} - {self.type}"
+        return f"[Deleted Order] - {self.type}"
